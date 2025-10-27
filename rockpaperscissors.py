@@ -1,111 +1,111 @@
-import streamlit as st
+import tkinter as tk
+from tkinter import messagebox
 import random
 
-# Page setup
-st.set_page_config(page_title="Rock Paper Scissors", page_icon="🎮", layout="centered")
-st.title("🎮 Rock Paper Scissors")
 
-# --- Game options ---
-choices = ["ROCK", "PAPER", "SCISSORS"]
+t = ("ROCK", "PAPER", "SCISSORS")
+up = 0  
+cp = 0  
 
-# --- Session State for persistent score ---
-if "user_points" not in st.session_state:
-    st.session_state.user_points = 0
-if "comp_points" not in st.session_state:
-    st.session_state.comp_points = 0
-if "result" not in st.session_state:
-    st.session_state.result = ""
-if "user_choice" not in st.session_state:
-    st.session_state.user_choice = ""
-if "comp_choice" not in st.session_state:
-    st.session_state.comp_choice = ""
+def show_instructions():
+    messagebox.showinfo(
+        "📋 Game Instructions",
+        "❌ To Remember:\n\n"
+        "🪨 Rock beats ✂️ Scissors\n"
+        "✂️ Scissors beat 📄 Paper\n"
+        "📄 Paper beats 🪨 Rock\n\n"
+        "🎮 Make your move wisely!"
+    )
 
-# --- Sidebar: Instructions ---
-with st.sidebar:
-    st.header("📋 Game Instructions")
-    st.markdown("""
-    **Rules to Remember:**
-    - 🪨 Rock beats ✂️ Scissors  
-    - ✂️ Scissors beat 📄 Paper  
-    - 📄 Paper beats 🪨 Rock  
-    """)
-    st.info("🎮 Make your move wisely and see if you can beat the computer!")
 
-# --- Display current score ---
-st.markdown(f"### 🧮 Scoreboard")
-st.write(f"**You:** {st.session_state.user_points} | **Computer:** {st.session_state.comp_points}")
+def start_game():
+    for widget in root.winfo_children():
+        widget.destroy()
 
-# --- Game UI ---
-st.markdown("### ✊ ✋ ✌️ Make Your Move:")
-cols = st.columns(3)
+    
+    global score_label
+    score_label = tk.Label(root, text=f"User: {up}  |  Computer: {cp}", anchor="e", justify="right")
+    score_label.pack(anchor="ne", padx=10, pady=5)
 
-with cols[0]:
-    if st.button("🪨 ROCK"):
-        st.session_state.user_choice = "ROCK"
-with cols[1]:
-    if st.button("📄 PAPER"):
-        st.session_state.user_choice = "PAPER"
-with cols[2]:
-    if st.button("✂️ SCISSORS"):
-        st.session_state.user_choice = "SCISSORS"
+   
+    tk.Label(root, text="Make Your Move", font=("Helvetica", 14)).pack(pady=5)
 
-# --- Play round when user makes a choice ---
-if st.session_state.user_choice:
-    st.session_state.comp_choice = random.choice(choices)
-    user = st.session_state.user_choice
-    comp = st.session_state.comp_choice
+    
+    b_frame = tk.Frame(root)
+    b_frame.pack(pady=10)
+    tk.Button(b_frame, text="ROCK", width=12, command=lambda: play("ROCK")).grid(row=0, column=0, padx=5)
+    tk.Button(b_frame, text="PAPER", width=12, command=lambda: play("PAPER")).grid(row=0, column=1, padx=5)
+    tk.Button(b_frame, text="SCISSORS", width=12, command=lambda: play("SCISSORS")).grid(row=0, column=2, padx=5)
 
-    # Determine winner
-    if user == comp:
-        st.session_state.result = "It's a Tie! 😐"
-    elif (user == "ROCK" and comp == "SCISSORS") or \
-         (user == "PAPER" and comp == "ROCK") or \
-         (user == "SCISSORS" and comp == "PAPER"):
-        st.session_state.user_points += 1
-        st.session_state.result = "🎉 You Won!"
+    
+    global user_label, comp_label, result_label
+    user_label = tk.Label(root, text="", fg="blue")
+    user_label.pack(pady=2)
+    comp_label = tk.Label(root, text="", fg="purple")
+    comp_label.pack(pady=2)
+    result_label = tk.Label(root, text="", fg="green")
+    result_label.pack(pady=5)
+
+    
+    tk.Button(root, text="End Game", width=25, command=end_game).pack(side="bottom", pady=15)
+
+
+def play(user_move):
+    global up, cp
+    comp_move = random.choice(t)
+
+    
+    user_label.config(text="You chose: " + user_move)
+    comp_label.config(text="Computer chose: " + comp_move)
+
+    
+    if user_move == comp_move:
+        result = "It's a tie!"
+    elif (user_move == "ROCK" and comp_move == "SCISSORS") or \
+         (user_move == "PAPER" and comp_move == "ROCK") or \
+         (user_move == "SCISSORS" and comp_move == "PAPER"):
+        up += 1
+        result = "You won! 🥳"
     else:
-        st.session_state.comp_points += 1
-        st.session_state.result = "😢 You Lost!"
+        cp += 1
+        result = "You lost! 😢"
 
-    # --- Display results ---
-    st.markdown("---")
-    st.subheader("🕹️ Round Result")
-    st.write(f"**You chose:** {user}")
-    st.write(f"**Computer chose:** {comp}")
-    st.success(st.session_state.result)
+    
+    score_label.config(text=f"User: {up}  |  Computer: {cp}")
+    result_label.config(text=result)
 
-# --- End Game button ---
-if st.button("🏁 End Game"):
-    st.markdown("## 🎯 Final Results")
-    st.write(f"**Your Score:** {st.session_state.user_points}")
-    st.write(f"**Computer Score:** {st.session_state.comp_points}")
 
-    if st.session_state.user_points > st.session_state.comp_points:
-        st.balloons()
-        st.success("🏆 You Win the Game!")
-    elif st.session_state.comp_points > st.session_state.user_points:
-        st.error("🤖 Computer Wins!")
+def end_game():
+    for widget in root.winfo_children():
+        widget.destroy()
+
+    if up > cp:
+        msg = "You Win! 🎉"
+    elif cp > up:
+        msg = "Computer Wins! 🤖"
     else:
-        st.info("⚖️ It's a Draw!")
+        msg = "It's a Tie!"
 
-    # Reset scores
-    st.session_state.user_points = 0
-    st.session_state.comp_points = 0
-    st.session_state.result = ""
-    st.session_state.user_choice = ""
-    st.session_state.comp_choice = ""
+    summary = f"Game Over!\n\nFinal Score:\nYou: {up}\nComputer: {cp}\n\n{msg}"
+    tk.Label(root, text=summary, justify="center").pack(pady=40)
+    tk.Button(root, text="Exit", width=25, command=root.destroy).pack(pady=20)
 
-# --- Styling ---
-st.markdown("""
-    <style>
-    .stButton button {
-        width: 100%;
-        font-size: 18px;
-        padding: 10px 0;
-        border-radius: 10px;
-    }
-    .stAlert {
-        text-align: center;
-    }
-    </style>
-""", unsafe_allow_html=True)
+
+root = tk.Tk()
+root.title("Rock Paper Scissors")
+root.geometry("500x330")
+root.option_add("*Font", "Helvetica 14")
+
+label = tk.Label(root, text="Rock Paper Scissors", font=60)
+label.pack(pady=20)
+
+sb = tk.Button(root, text="Start Game", width=25, command=start_game)
+sb.pack(side="top", pady=10, padx=20)
+
+ib = tk.Button(root, text="Instructions", width=25, command=show_instructions)
+ib.pack(side="top", pady=10, padx=20)
+
+eb = tk.Button(root, text="Exit", width=25, command=root.destroy)
+eb.pack(side="top", pady=10, padx=20)
+
+root.mainloop()
